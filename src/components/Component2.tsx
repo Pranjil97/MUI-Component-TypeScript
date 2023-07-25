@@ -36,6 +36,8 @@ const Component2: React.FC = () => {
 
     // State to manage selected departments and sub-departments
     const [selected, setSelected] = useState<number[]>([]);
+    // State to track if sub-options are visible for each department
+    const [showSubOptions, setShowSubOptions] = useState<{ [key: number]: boolean }>({});
 
     const isDepartmentSelected = (departmentId: number) => {
         const subDepartments = departmentsData.find((dept) => dept.id === departmentId)?.subDepartments;
@@ -94,29 +96,42 @@ const Component2: React.FC = () => {
         }
     };
 
+    const toggleSubOptionsVisibility = (departmentId: number) => {
+        setShowSubOptions((prevShowSubOptions) => ({
+            ...prevShowSubOptions,
+            [departmentId]: !prevShowSubOptions[departmentId],
+        }));
+    };
+
     return (
         <div>
             {departmentsData.map((department) => (
                 <div key={department.id} className="mb-4">
-                    <div className="flex items-center cursor-pointer">
-                        <Typography>{isDepartmentSelected(department.id) ? '-' : '-'}</Typography>
+                    <div className="flex items-center cursor-pointer" onClick={() => toggleSubOptionsVisibility(department.id)}>
+                        <Typography>{showSubOptions[department.id] ? '-' : '+'}</Typography>
                         <Checkbox
                             checked={isDepartmentSelected(department.id)}
-                            onChange={() => handleSelectAllSubDepartments(department.id, !isDepartmentSelected(department.id))}
+                            onChange={() =>
+                                handleSelectAllSubDepartments(department.id, !isDepartmentSelected(department.id))
+                            }
                         />
                         <Typography>{department.name}</Typography>
                     </div>
 
-                    {department.subDepartments.map((subDept) => (
-                        <div className="flex ml-4 justify-start items-center" key={subDept.id}>
-                            <Checkbox
-                                color="secondary"
-                                checked={isSubDepartmentSelected(subDept.id)}
-                                onChange={() => handleSelect(subDept.id)}
-                            />
-                            {subDept.name}
+                    {showSubOptions[department.id] && (
+                        <div>
+                            {department.subDepartments.map((subDept) => (
+                                <div className="flex ml-4 justify-start items-center" key={subDept.id}>
+                                    <Checkbox
+                                        color="secondary"
+                                        checked={isSubDepartmentSelected(subDept.id)}
+                                        onChange={() => handleSelect(subDept.id)}
+                                    />
+                                    {subDept.name}
+                                </div>
+                            ))}
                         </div>
-                    ))}
+                    )}
                 </div>
             ))}
         </div>
